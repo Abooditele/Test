@@ -9293,7 +9293,10 @@ public class MessagesController extends BaseController implements NotificationCe
                         }
                         MessageObject obj = dialogMessagesByIds.get(msgId);
 if (obj == null) {
-    obj = getMessagesStorage().getMessageSync(dialogIdFinal, msgId);
+    TLRPC.Message msgFromStorage = getMessagesStorage().getMessage(dialogIdFinal, msgId);
+if (msgFromStorage != null) {
+    obj = new MessageObject(currentAccount, msgFromStorage, false, false);
+}
 }
                         TLRPC.Message msg;
                         if (obj == null) {
@@ -9323,7 +9326,10 @@ if (obj == null) {
                         }
                         MessageObject obj = dialogMessagesByIds.get(msgId);
 if (obj == null) {
-    obj = getMessagesStorage().getMessageSync(dialogIdFinal, msgId);
+    TLRPC.Message msgFromStorage = getMessagesStorage().getMessage(dialogIdFinal, msgId);
+if (msgFromStorage != null) {
+    obj = new MessageObject(currentAccount, msgFromStorage, false, false);
+}
 }
                         TLRPC.Message msg = obj != null ? obj.messageOwner : MessageHelper.getInstance(currentAccount).getMessage(dialogIdFinal, msgId);
                         if (msg != null) {
