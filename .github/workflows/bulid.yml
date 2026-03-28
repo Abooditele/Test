@@ -1,0 +1,86 @@
+name: Release Build
+
+on:
+  push:
+    branches:
+      - main
+    paths-ignore:
+      - '**.md'
+      - '.github/**'
+      - '!.github/workflows/release.yml'
+  workflow_dispatch:
+
+jobs:
+  build:
+    name: Gradle Build
+    runs-on: ubuntu-latest
+    env:
+      NATIVE_TARGET: "arm64-v8a"
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up JDK
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: '21'
+
+      - name: Set up Gradle
+        uses: gradle/actions/setup-gradle@v4
+
+      - name: Set up Android SDK Tools
+        uses: android-actions/setup-android@v3
+        with:
+          packages: "build-tools;36.0.0 ndk;27.2.12479018 platforms;android-36"
+
+      - name: Generate New Keystore
+        run: |
+          # توليد ملف توقيع جديد ببيانات افتراضية
+          keytool -genkey -v -keystore TMessagesProj/release.keystore \
+            -alias nagramx_alias -keyalg RSA -keysize 2048 -validity 10000 \
+            -storepass "nagramx_pass" -keypass "nagramx_pass" \
+            -dname "CN=NagramX, OU=NagramX, O=NagramX, L=NagramX, S=NagramX, C=US"
+          
+          # تأكيد المسار (سيتم استبدال الملف الحالي إن وجد)
+          ls -l TMessagesProj/release.keystore
+
+      - name: Configure Build Environment
+        run: |
+          echo "sdk.dir=${ANDROID_HOME}" >> local.properties
+          # تمرير كلمات سر التوقيع التي استخدمناها في الخطوة السابقة لـ Gradle
+          echo "KEYSTORE_PASS=nagramx_pass" >> local.properties
+          echo "ALIAS_NAME=nagramx_alias" >> local.properties
+          echo "ALIAS_PASS=nagramx_pass" >> local.properties
+          # تمرير Secrets التي حددتها (APP_ID, APP_HASH)
+          echo "TELEGRAM_APP_ID=${{ secrets.TELEGRAM_APP_ID }}" >> local.properties
+          echo "TELEGRAM_APP_HASH=${{ secrets.TELEGRAM_APP_HASH }}" >> local.properties
+
+      - name: Modify Gradle JVM Args
+        run: |
+          MEMORY_KB=$(awk '/MemTotal/ {print $2}' /proc/meminfo)
+          MEMORY_GB=$((MEMORY_KB / 1024 / 1024))
+          echo "Detected memory size: ${MEMORY_GB}GB"
+          if [ $MEMORY_GB -ge 12 ]; then
+            sed -i '/^org\.gradle\.jvmargs=/d' gradle.properties
+            echo "org.gradle.jvmargs=-Xmx8G -XX:MaxMetaspaceSize=2G -XX:+UseParallelGC -XX:+HeapDumpOnOutOfMemoryError -Dfile.encoding=UTF-8" >> gradle.properties
+          fi
+
+      - name: Release Build
+        id: release_build_step
+        env:
+          COMMIT_ID: ${{ github.event.head_commit.id }}
+        run: |
+          export BUILD_TIMESTAMP=$(date +%s)
+          echo "build_timestamp=$BUILD_TIMESTAMP" >> "$GITHUB_OUTPUT"
+          ./gradlew TMessagesProj:assembleRelease
+
+          APK=$(find TMessagesProj/build/outputs/apk -name '*arm64-v8a*.apk')
+          APK=$(dirname $APK)
+          echo "APK=$APK" >> $GITHUB_ENV
+
+      - name: Upload Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: NagramX-Release-APK
+          path: ${{ env.APK }}
