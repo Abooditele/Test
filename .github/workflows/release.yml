@@ -36,13 +36,16 @@ jobs:
 
       - name: Generate New Keystore
         run: |
+          # حذف أي ملف توقيع قديم لتجنب تعارض كلمات السر
+          rm -f TMessagesProj/release.keystore
+          
           # توليد ملف توقيع جديد ببيانات افتراضية
           keytool -genkey -v -keystore TMessagesProj/release.keystore \
             -alias nagramx_alias -keyalg RSA -keysize 2048 -validity 10000 \
             -storepass "nagramx_pass" -keypass "nagramx_pass" \
             -dname "CN=NagramX, OU=NagramX, O=NagramX, L=NagramX, S=NagramX, C=US"
           
-          # تأكيد المسار (سيتم استبدال الملف الحالي إن وجد)
+          # تأكيد وجود الملف
           ls -l TMessagesProj/release.keystore
 
       - name: Configure Build Environment
