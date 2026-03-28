@@ -19293,7 +19293,10 @@ public class ChatMessageCell extends BaseCell implements SeekBar.SeekBarDelegate
             return;
         }
         if (shouldTranslucentDeleted() && ayuDeleted) {
-            canvas.saveLayerAlpha(null, (int) (255 * 0.75f), Canvas.ALL_SAVE_FLAG);
+            canvas.saveLayerAlpha(null, (int) (255 * 0.95f), Canvas.ALL_SAVE_FLAG);
+            Paint darkPaint = new Paint();
+            darkPaint.setColorFilter(new PorterDuffColorFilter(0x33000000, PorterDuff.Mode.SRC_ATOP));
+            canvas.saveLayer(null, darkPaint);
         }
         if (!wasLayout) {
             onLayout(false, getLeft(), getTop(), getRight(), getBottom());
@@ -19838,7 +19841,7 @@ public class ChatMessageCell extends BaseCell implements SeekBar.SeekBarDelegate
                         currentSelectedBackgroundAlpha = 0;
                         currentBackgroundDrawable.setAlpha((int) (255 * alphaInternal));
                         if (NaConfig.INSTANCE.getTranslucentDeletedMessages().Bool() && ayuDeleted && currentMessageObject.isOutOwner()) {
-                            currentBackgroundDrawable.setAlpha((int) (255 * 0.75f));
+                            currentBackgroundDrawable.setAlpha((int) (255 * 1.0f));
                         }
                         currentBackgroundDrawable.drawCached(canvas, backgroundCacheParams);
                     }
@@ -20996,7 +20999,7 @@ public class ChatMessageCell extends BaseCell implements SeekBar.SeekBarDelegate
                 currentBackgroundShadowDrawable.draw(canvas);
                 currentBackgroundShadowDrawable.setAlpha(255);
             }
-            currentBackgroundDrawable.setAlpha((int) (getAlpha() * (shouldTranslucentDeleted() && ayuDeleted ? 255 * 0.75f : 255)));
+            currentBackgroundDrawable.setAlpha((int) (getAlpha() * (shouldTranslucentDeleted() && ayuDeleted ? 255 * 1.0f : 255)));
             currentBackgroundDrawable.setBounds(left, top, right, bottom);
             currentBackgroundDrawable.drawCached(canvas, backgroundCacheParams);
             currentBackgroundDrawable.setAlpha(255);
