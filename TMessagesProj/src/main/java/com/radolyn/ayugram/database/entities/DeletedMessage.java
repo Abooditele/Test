@@ -25,4 +25,5 @@ import androidx.room.PrimaryKey;
 public class DeletedMessage extends AyuMessageBase {
     @PrimaryKey(autoGenerate = true)
     public long fakeId;
+    public long deletedDate;
 }

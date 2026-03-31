@@ -307,6 +307,11 @@ import org.telegram.ui.Stars.MessageSuggestionOfferSheet;
 import org.telegram.ui.Stars.StarReactionsOverlay;
 import org.telegram.ui.Stars.StarsController;
 import org.telegram.ui.Stars.StarsIntroActivity;
+import com.radolyn.ayugram.messages.AyuMessagesController;
+import com.radolyn.ayugram.database.entities.DeletedMessageFull;
+import java.text.SimpleDateFormat;
+import java.util.Date;
+import java.util.Locale;
 import org.telegram.ui.Stars.StarsReactionsSheet;
 import org.telegram.ui.Stories.PublicStoriesList;
 import org.telegram.ui.Stories.StoriesListPlaceProvider;
@@ -31204,6 +31209,15 @@ public class ChatActivity extends BaseFragment implements
         }
 
         boolean isAyuDeleted = message != null && message.isAyuDeleted();
+
+        if (isAyuDeleted) {
+            DeletedMessageFull deletedMessage = AyuMessagesController.getInstance().getDeletedMessage(message.getDialogId(), message.getId());
+            if (deletedMessage != null && deletedMessage.deletedDate > 0) {
+                SimpleDateFormat sdf = new SimpleDateFormat("yy.MM.dd 'الساعة' h:mm a", Locale.getDefault());
+                String formattedDate = sdf.format(new Date(deletedMessage.deletedDate));
+                menu.add(0, 9999, 0, "تاريخ الحذف: " + formattedDate).setEnabled(false);
+            }
+        }
 
         boolean allowChatActions = true;
         boolean allowPin;

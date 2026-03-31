@@ -2665,7 +2665,15 @@ public class ChatActivityEnterView extends FrameLayout implements
         textFieldContainer.setPadding(0, dp(1), 0, 0);
         addView(textFieldContainer, LayoutHelper.createFrame(LayoutHelper.MATCH_PARENT, LayoutHelper.WRAP_CONTENT, Gravity.LEFT | Gravity.BOTTOM, 0, 1, 0, 0));
 
-        FrameLayout frameLayout = messageEditTextContainer = new FrameLayout(context) {
+                FrameLayout frameLayout = messageEditTextContainer = new FrameLayout(context) {
+            @Override
+            protected void onDraw(Canvas canvas) {
+                super.onDraw(canvas);
+                // Draw rounded background for the input field
+                Theme.chat_composeBackgroundPaint.setColor(getThemedColor(Theme.key_chat_messagePanelBackground));
+                canvas.drawRoundRect(0, 0, getMeasuredWidth(), getMeasuredHeight(), dp(22), dp(22), Theme.chat_composeBackgroundPaint);
+            }
+        };
             @Override
             protected void onMeasure(int widthMeasureSpec, int heightMeasureSpec) {
                 super.onMeasure(widthMeasureSpec, heightMeasureSpec);
@@ -2706,7 +2714,9 @@ public class ChatActivityEnterView extends FrameLayout implements
             }
         };
         frameLayout.setClipChildren(false);
-        textFieldContainer.addView(frameLayout, LayoutHelper.createFrame(LayoutHelper.MATCH_PARENT, LayoutHelper.WRAP_CONTENT, Gravity.BOTTOM, 0, 0, DEFAULT_HEIGHT, 0));
+        textFieldContainer.addView(frameLayout, LayoutHelper.createFrame(LayoutHelper.MATCH_PARENT, LayoutHelper.WRAP_CONTENT, Gravity.BOTTOM, dp(50), 0, dp(50), 0)); // Adjust messageEditTextContainer to make space for emoji and mic buttons
+        textFieldContainer.addView(emojiButton, LayoutHelper.createFrame(DEFAULT_HEIGHT, DEFAULT_HEIGHT, Gravity.BOTTOM | Gravity.LEFT, 2, 0, 0, 0)); // Add emoji button to textFieldContainer
+        textFieldContainer.addView(audioVideoButtonContainer, LayoutHelper.createFrame(DEFAULT_HEIGHT, DEFAULT_HEIGHT, Gravity.BOTTOM | Gravity.RIGHT, 0, 0, 2, 0)); // Add mic button to textFieldContainer
 
         emojiButton = new ChatActivityEnterViewAnimatedIconView(context) {
             @Override
@@ -2724,8 +2734,8 @@ public class ChatActivityEnterView extends FrameLayout implements
         emojiButton.setFocusable(true);
         int padding = dp(7.5f);
         emojiButton.setPadding(padding, padding, padding, padding);
-        emojiButton.setColorFilter(new PorterDuffColorFilter(getThemedColor(Theme.key_glass_defaultIcon), PorterDuff.Mode.SRC_IN));
-        emojiButton.setBackground(Theme.createInsetRoundRectDrawable(getThemedColor(Theme.key_listSelector), dp(19), dp(1), dp(3)));
+        emojiButton.setBackground(Theme.createCircleDrawable(dp(DEFAULT_HEIGHT), getThemedColor(Theme.key_chat_messagePanelBackground))); // Make it circular and match background
+        emojiButton.setColorFilter(new PorterDuffColorFilter(getThemedColor(Theme.key_chat_messagePanelIcons), PorterDuff.Mode.SRC_IN)); // Change icon color to match iOS style
         emojiButton.setOnClickListener(v -> {
             if (adjustPanLayoutHelper != null && adjustPanLayoutHelper.animationInProgress()) {
                 return;
@@ -2766,7 +2776,7 @@ public class ChatActivityEnterView extends FrameLayout implements
                 }
             }
         });
-        messageEditTextContainer.addView(emojiButton, LayoutHelper.createFrame(DEFAULT_HEIGHT, DEFAULT_HEIGHT, Gravity.BOTTOM | Gravity.LEFT, 2, 0, 0, 0));
+
         setEmojiButtonImage(false, false);
 
         if (isChat) {
@@ -3182,7 +3192,7 @@ public class ChatActivityEnterView extends FrameLayout implements
             });
         }
         audioVideoButtonContainer.setSoundEffectsEnabled(false);
-        sendButtonContainer.addView(audioVideoButtonContainer, LayoutHelper.createFrame(DEFAULT_HEIGHT, DEFAULT_HEIGHT, Gravity.RIGHT | Gravity.BOTTOM));
+
         audioVideoButtonContainer.setFocusable(true);
         audioVideoButtonContainer.setImportantForAccessibility(View.IMPORTANT_FOR_ACCESSIBILITY_YES);
 
@@ -3379,7 +3389,9 @@ public class ChatActivityEnterView extends FrameLayout implements
 //        audioVideoSendButton.setFocusable(true);
 //        audioVideoSendButton.setAccessibilityDelegate(mediaMessageButtonsDelegate);
         padding = dp(10f);
-        audioVideoSendButton.setPadding(padding, padding, padding, padding);
+                audioVideoSendButton.setPadding(padding, padding, padding, padding);
+        audioVideoSendButton.setBackground(Theme.createCircleDrawable(dp(DEFAULT_HEIGHT), getThemedColor(Theme.key_chat_messagePanelBackground))); // Make it circular and match background
+        audioVideoSendButton.setColorFilter(new PorterDuffColorFilter(getThemedColor(Theme.key_chat_messagePanelIcons), PorterDuff.Mode.SRC_IN)); // Change icon color to match iOS style
         audioVideoButtonContainer.addView(audioVideoSendButton, LayoutHelper.createFrame(DEFAULT_HEIGHT, DEFAULT_HEIGHT));
 
         cancelBotButton = new ImageView(context);
@@ -6017,7 +6029,11 @@ public class ChatActivityEnterView extends FrameLayout implements
             return;
         }
 
-        messageEditText = new ChatActivityEditTextCaption(getContext(), resourcesProvider) {
+                messageEditText = new ChatActivityEditTextCaption(getContext(), resourcesProvider) {
+            {
+                setBackground(null);
+                setPadding(dp(12), dp(8), dp(12), dp(8)); // Adjust padding for better appearance
+            }
 
             private boolean firstDraw = true;
             @Override
@@ -6133,7 +6149,7 @@ if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.VANILLA_ICE_CREAM) {
         messageEditText.setHintTextColor(getThemedColor(Theme.key_chat_messagePanelHint));
         messageEditText.setCursorColor(getThemedColor(Theme.key_chat_messagePanelCursor));
         messageEditText.setHandlesColor(getThemedColor(Theme.key_chat_TextSelectionCursor));
-        messageEditTextContainer.addView(messageEditText, 1, LayoutHelper.createFrame(LayoutHelper.MATCH_PARENT, LayoutHelper.WRAP_CONTENT, Gravity.BOTTOM, 52, 0, isChat ? 50 : 2, 1.5f));
+        messageEditTextContainer.addView(messageEditText, 1, LayoutHelper.createFrame(LayoutHelper.MATCH_PARENT, LayoutHelper.WRAP_CONTENT, Gravity.BOTTOM, 0, 0, 0, 0)); // Adjust messageEditText layout within its container
         messageEditText.setOnKeyListener(new OnKeyListener() {
 
             @Override

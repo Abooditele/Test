@@ -98,6 +98,17 @@ public class AyuMessagesController {
     }
 
     public static AyuMessagesController getInstance() {
+        return getInstance(UserConfig.getInstance(UserConfig.selectedAccount).getCurrentUser().id);
+    }
+
+    public DeletedMessageFull getDeletedMessage(long dialogId, int messageId) {
+        return withDaoRetry(
+                "getDeletedMessage",
+                () -> deletedMessageDao.getMessage(UserConfig.getInstance(UserConfig.selectedAccount).getCurrentUser().id, dialogId, messageId)
+        );
+    }
+
+    public static AyuMessagesController getInstance(long userId) {
         if (instance == null) {
             instance = new AyuMessagesController();
         }
@@ -220,6 +231,7 @@ public class AyuMessagesController {
         deletedMessage.dialogId = prefs.getDialogId();
         deletedMessage.messageId = prefs.getMessageId();
         deletedMessage.entityCreateDate = prefs.getRequestCatchTime();
+        deletedMessage.deletedDate = System.currentTimeMillis(); // Set current time as deletion date
 
         var msg = prefs.getMessage();
 
